@@ -77,10 +77,6 @@ test.describe('Edit Todo', () => {
 
 
 test.describe('Delete Todo', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('https://demo.playwright.dev/todomvc');
-  });
-
   test('should be able to delete a todo item using the red X button', async ({ page }) => {
     // Create a new todo locator
     const newTodo = page.getByPlaceholder('What needs to be done?');
@@ -118,10 +114,6 @@ test.describe('Delete Todo', () => {
 });
 
 test.describe('Mark Todo as Completed', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('https://demo.playwright.dev/todomvc');
-  });
-
   test('should be able to mark a todo item as completed', async ({ page }) => {
     // Create a new todo locator
     const newTodo = page.getByPlaceholder('What needs to be done?');
@@ -143,9 +135,6 @@ test.describe('Mark Todo as Completed', () => {
     // Verify the todo item is marked as completed with a green checkmark
     await expect(toggleCheckbox).toBeChecked();
 
-    // // Verify the todo item is crossed off with a strikethrough
-    // await expect(todoItem).toHaveClass(/completed/);
-
     // Locate the parent <li> element of the todo item to verify the class
     const todoListItem = todoItem.locator('..'); // Assuming the parent is <li>
     const todoListItemParent = todoListItem.locator('..'); // Assuming the parent is <li>
@@ -155,8 +144,6 @@ test.describe('Mark Todo as Completed', () => {
 
     // Verify the todo item is crossed off with a strikethrough (usually happens automatically with the 'completed' class)
     await expect(todoItem).toHaveCSS('text-decoration', /^line-through/);
-    // const textDecoration = await todoItem.evaluate((el) => window.getComputedStyle(el).textDecoration);
-    // expect(['line-through solid rgb(96, 96, 96)', 'line-through solid rgb(217, 217, 217)', 'line-through rgb(217, 217, 217)', 'line-through']).toContain(textDecoration);
 
     // Verify the number of completed todos in local storage is 1
     await checkNumberOfCompletedTodosInLocalStorage(page, 1);
