@@ -185,3 +185,54 @@ test.describe('View Active Todo Items', () => {
     await checkNumberOfTodosInLocalStorage(page, 2);
   });
 });
+
+test.describe('Clear Completed Todo Items', () => {
+  test('should clear completed todo items from the list and remove them from the local storage', async ({ page }) => {
+    // Create a new todo locator
+    const newTodo = page.getByPlaceholder('What needs to be done?');
+
+    // Create two todo items
+    await newTodo.fill(TODO_ITEMS[0]);
+    await newTodo.press('Enter');
+    await newTodo.fill(TODO_ITEMS[1]);
+    await newTodo.press('Enter');
+
+    // Verify both todo items are created
+    await expect(page.getByTestId('todo-title')).toHaveText([TODO_ITEMS[0], TODO_ITEMS[1]]);
+
+    // Mark the first todo item as completed
+    const firstTodoItem = page.getByTestId('todo-title').nth(0);
+    const toggleCheckbox = firstTodoItem.locator('..').locator('.toggle');
+    await toggleCheckbox.click();
+
+    // Correctly locate the parent <li> element of the todo item to verify the class
+    const firstTodoDiv = firstTodoItem.locator('..'); // This is the <div> with the class "view"
+    const firstTodoListItem = firstTodoDiv.locator('..'); // This is the parent <li> element
+
+    // Verify the parent <li> element is marked as completed with the 'completed' class
+    await expect(firstTodoListItem).toHaveClass(/completed/);
+
+    // Verify the number of completed todos in local storage is 1
+    await checkNumberOfCompletedTodosInLocalStorage(page, 1);
+
+    // Click on the "Clear completed" button to remove completed todos
+    await page.locator('text=Clear completed').click();
+
+    // // Verify the completed todo item is removed from the todo list
+    // await expect(firstTodoItem).toBeHidden();
+
+    // Verify that only the active todo item remains in the list
+    await expect(page.getByTestId('todo-title')).toHaveText([TODO_ITEMS[1]]);
+
+    // Verify the number of completed todos in local storage is now 0
+    await checkNumberOfCompletedTodosInLocalStorage(page, 0);
+
+    // Verify the total number of todos in local storage is now 1
+    await checkNumberOfTodosInLocalStorage(page, 1);
+  });
+
+  // The test case #6 spec suggests a todo item is moved to the Completed list when the "Clear Completed" 
+  // button is clicked. This action results in the item being removed from all lists, not moving to the
+  // completed list.
+
+});
