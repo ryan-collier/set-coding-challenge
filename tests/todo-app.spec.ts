@@ -136,7 +136,7 @@ test.describe('Mark Todo as Completed', () => {
     await expect(toggleCheckbox).toBeChecked();
 
     // Locate the parent <li> element of the todo item to verify the class
-    const todoListItem = todoItem.locator('..'); // Assuming the parent is <li>
+    const todoListItem = todoItem.locator('..'); // This is not the parent <li>
     const todoListItemParent = todoListItem.locator('..'); // Assuming the parent is <li>
 
     // Verify the parent <li> element is marked as completed with the 'completed' class
@@ -150,5 +150,38 @@ test.describe('Mark Todo as Completed', () => {
 
     // Verify the total number of todos in local storage is still 1
     await checkNumberOfTodosInLocalStorage(page, 1);
+  });
+});
+
+test.describe('View Active Todo Items', () => {
+  test('should show only active (not completed) todo items in the Active list', async ({ page }) => {
+    // Create a new todo locator
+    const newTodo = page.getByPlaceholder('What needs to be done?');
+
+    // Create two todo items
+    await newTodo.fill(TODO_ITEMS[0]);
+    await newTodo.press('Enter');
+    await newTodo.fill(TODO_ITEMS[1]);
+    await newTodo.press('Enter');
+
+    // Verify both todo items are created
+    await expect(page.getByTestId('todo-title')).toHaveText([TODO_ITEMS[0], TODO_ITEMS[1]]);
+
+    // Mark the first todo item as completed
+    const firstTodoItem = page.getByTestId('todo-title').nth(0);
+    const toggleCheckbox = firstTodoItem.locator('..').locator('.toggle');
+    await toggleCheckbox.click();
+
+    // Verify the number of completed todos in local storage is 1
+    await checkNumberOfCompletedTodosInLocalStorage(page, 1);
+
+    // Click on the "Active" filter to view only active todos
+    await page.locator('text=Active').click();
+
+    // Verify only the second todo item (active) is visible
+    await expect(page.getByTestId('todo-title')).toHaveText([TODO_ITEMS[1]]);
+
+    // Verify the number of todos in local storage is still 2
+    await checkNumberOfTodosInLocalStorage(page, 2);
   });
 });
