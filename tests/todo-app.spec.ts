@@ -116,3 +116,52 @@ test.describe('Delete Todo', () => {
     await checkNumberOfTodosInLocalStorage(page, 1);
   });
 });
+
+test.describe('Mark Todo as Completed', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('https://demo.playwright.dev/todomvc');
+  });
+
+  test('should be able to mark a todo item as completed', async ({ page }) => {
+    // Create a new todo locator
+    const newTodo = page.getByPlaceholder('What needs to be done?');
+
+    // Create the first todo item
+    await newTodo.fill(TODO_ITEMS[0]);
+    await newTodo.press('Enter');
+
+    // Verify the first todo item is created
+    await expect(page.getByTestId('todo-title')).toHaveText([TODO_ITEMS[0]]);
+
+    // Locate the checkbox to mark the todo as completed
+    const todoItem = page.getByTestId('todo-title').nth(0);
+    const toggleCheckbox = todoItem.locator('..').locator('.toggle');
+
+    // Click the checkbox to mark the todo as completed
+    await toggleCheckbox.click();
+
+    // Verify the todo item is marked as completed with a green checkmark
+    await expect(toggleCheckbox).toBeChecked();
+
+    // // Verify the todo item is crossed off with a strikethrough
+    // await expect(todoItem).toHaveClass(/completed/);
+
+    // Locate the parent <li> element of the todo item to verify the class
+    const todoListItem = todoItem.locator('..'); // Assuming the parent is <li>
+    const todoListItemParent = todoListItem.locator('..'); // Assuming the parent is <li>
+
+    // Verify the parent <li> element is marked as completed with the 'completed' class
+    await expect(todoListItemParent).toHaveClass(/completed/);
+
+    // Verify the todo item is crossed off with a strikethrough (usually happens automatically with the 'completed' class)
+    await expect(todoItem).toHaveCSS('text-decoration', /^line-through/);
+    // const textDecoration = await todoItem.evaluate((el) => window.getComputedStyle(el).textDecoration);
+    // expect(['line-through solid rgb(96, 96, 96)', 'line-through solid rgb(217, 217, 217)', 'line-through rgb(217, 217, 217)', 'line-through']).toContain(textDecoration);
+
+    // Verify the number of completed todos in local storage is 1
+    await checkNumberOfCompletedTodosInLocalStorage(page, 1);
+
+    // Verify the total number of todos in local storage is still 1
+    await checkNumberOfTodosInLocalStorage(page, 1);
+  });
+});
