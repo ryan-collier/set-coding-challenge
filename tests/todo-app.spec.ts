@@ -74,3 +74,45 @@ test.describe('Edit Todo', () => {
     await checkNumberOfTodosInLocalStorage(page, 1);
   });
 });
+
+
+test.describe('Delete Todo', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('https://demo.playwright.dev/todomvc');
+  });
+
+  test('should be able to delete a todo item using the red X button', async ({ page }) => {
+    // Create a new todo locator
+    const newTodo = page.getByPlaceholder('What needs to be done?');
+
+    // Create the first todo item
+    await newTodo.fill(TODO_ITEMS[0]);
+    await newTodo.press('Enter');
+
+    // Verify the first todo item is created
+    await expect(page.getByTestId('todo-title')).toHaveText([TODO_ITEMS[0]]);
+
+    // Create the second todo item
+    await newTodo.fill(TODO_ITEMS[1]);
+    await newTodo.press('Enter');
+
+    // Verify both todo items are created
+    await expect(page.getByTestId('todo-title')).toHaveText([TODO_ITEMS[0], TODO_ITEMS[1]]);
+
+    // Locate the delete button (red X) for the first todo item
+    const todoItem = page.getByTestId('todo-title').nth(0);
+    const deleteButton = todoItem.locator('..').locator('.destroy');
+
+    // Hover over the first todo item to reveal the delete button
+    await todoItem.hover();
+
+    // Click the delete button
+    await deleteButton.click();
+
+    // Verify the first todo item is removed
+    await expect(page.getByTestId('todo-title')).toHaveText([TODO_ITEMS[1]]);
+
+    // Verify the number of todos in local storage is now 1
+    await checkNumberOfTodosInLocalStorage(page, 1);
+  });
+});
